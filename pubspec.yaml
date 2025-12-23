@@ -1,0 +1,62 @@
+name: racardi
+description: Racardi. Rains Discoiunt cards simple wallet
+publish_to: none
+version: 1.1.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/add_icon.png"
+  remove_alpha_ios: true
+
+dependencies:
+  flutter:
+    sdk: flutter
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.2
+  archive: ^4.0.7
+  image: ^4.3.0
+  barcode_widget: ^2.0.4
+  image_picker: ^1.1.1
+  mobile_scanner: ^7.1.4
+  dtd: ^4.0.0
+  flutter_lints: ^6.0.0
+  google_fonts: ^6.3.3
+  json_rpc_2: ^4.0.0
+  path: ^1.9.1
+  stack_trace: ^1.12.1
+  url_launcher: ^6.3.2
+  web: ^1.1.1
+  file_picker: ^10.3.8
+  flutter_launcher_icons: ^0.13.1  
+  flutter_native_splash: ^2.4.1
+  flutter_file_dialog: ^3.0.2
+  share_plus: ^10.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.6
+  hive_generator: ^2.0.1
+
+flutter_native_splash:
+  color: "#FFFFFF"        # фон
+  image: assets/icon/add_icon.png
+
+  android: true
+  ios: true
+  web: false
+
+  android_12:
+    color: "#ffffff"
+    image: assets/icon/add_icon.png
+
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
