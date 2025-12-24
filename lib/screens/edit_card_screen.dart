@@ -6,6 +6,7 @@ import '../models/discount_card.dart';
 import '../services/barcode_service.dart';
 import '../widgets/editable_image_widget.dart';
 import 'barcode_scanner_screen.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EditCardScreen extends StatefulWidget {
   final DiscountCard card;
@@ -32,6 +33,20 @@ class _EditCardScreenState extends State<EditCardScreen> {
     barcodeController = TextEditingController(text: widget.card.primaryBarcode);
     front = File(widget.card.frontImagePath);
     back = File(widget.card.backImagePath);
+  }
+
+  Future<File> _saveImagePermanently(File file) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final imagesDir = Directory('${dir.path}/cards');
+
+    if (!await imagesDir.exists()) {
+      await imagesDir.create(recursive: true);
+    }
+
+    final newPath =
+        '${imagesDir.path}/img_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    return file.copy(newPath);
   }
 
   Future<File?> pickAndEditImage(ImageSource source, File file) async {
@@ -68,7 +83,9 @@ class _EditCardScreenState extends State<EditCardScreen> {
               title: const Text('Камера'),
               onTap: () {
                 Navigator.pop(context);
-                isFront ? editFront(ImageSource.camera) : editBack(ImageSource.camera);
+                isFront
+                    ? editFront(ImageSource.camera)
+                    : editBack(ImageSource.camera);
               },
             ),
             ListTile(
@@ -76,7 +93,9 @@ class _EditCardScreenState extends State<EditCardScreen> {
               title: const Text('Галерея'),
               onTap: () {
                 Navigator.pop(context);
-                isFront ? editFront(ImageSource.gallery) : editBack(ImageSource.gallery);
+                isFront
+                    ? editFront(ImageSource.gallery)
+                    : editBack(ImageSource.gallery);
               },
             ),
           ],
@@ -130,11 +149,23 @@ class _EditCardScreenState extends State<EditCardScreen> {
       return;
     }
 
+    File finalFront = front;
+    File finalBack = back;
+
+// If image was replaced (path outside documents), save permanently
+    if (!front.path.contains('/cards/')) {
+      finalFront = await _saveImagePermanently(front);
+    }
+
+    if (!back.path.contains('/cards/')) {
+      finalBack = await _saveImagePermanently(back);
+    }
+
     widget.card
       ..title = titleController.text
       ..primaryBarcode = barcode
-      ..frontImagePath = front.path
-      ..backImagePath = back.path
+      ..frontImagePath = finalFront.path
+      ..backImagePath = finalBack.path
       ..save();
 
     Navigator.pop(context);
@@ -151,7 +182,8 @@ class _EditCardScreenState extends State<EditCardScreen> {
             controller: titleController,
             decoration: const InputDecoration(labelText: 'Название'),
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[а-яА-ЯёЁa-zA-Z0-9\s]')),
+              FilteringTextInputFormatter.allow(
+                  RegExp(r'[а-яА-ЯёЁa-zA-Z0-9\s]')),
             ],
           ),
           const SizedBox(height: 10),

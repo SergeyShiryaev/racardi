@@ -30,6 +30,37 @@ class _AddCardScreenState extends State<AddCardScreen> {
   static const double cardRatio = 1.586;
 
   // ───────────────── IMAGE RESIZE ─────────────────
+  Future<void> _autoDetectBarcode() async {
+
+    final images = <File>[
+      if (front != null) front!,
+      if (back != null) back!,
+    ];
+
+    if (images.isEmpty) return;
+
+    final detected = await BarcodeService.detectFromImages(images);
+
+    if (detected != null && detected.isNotEmpty) {
+      setState(() {
+        barcodeController.text = detected;
+      });
+    }
+  }
+
+  Future<File> _saveImagePermanently(File file) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final imagesDir = Directory('${dir.path}/cards');
+
+    if (!await imagesDir.exists()) {
+      await imagesDir.create(recursive: true);
+    }
+
+    final newPath =
+        '${imagesDir.path}/img_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    return file.copy(newPath);
+  }
 
   Future<File> _resizeImage(File file) async {
     final bytes = await file.readAsBytes();
@@ -94,6 +125,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 final img = await pickAndEditImage(ImageSource.camera);
                 if (img != null) {
                   setState(() => isFront ? front = img : back = img);
+                  await _autoDetectBarcode();
                 }
               },
             ),
@@ -105,6 +137,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 final img = await pickAndEditImage(ImageSource.gallery);
                 if (img != null) {
                   setState(() => isFront ? front = img : back = img);
+                  await _autoDetectBarcode();
                 }
               },
             ),
@@ -226,13 +259,18 @@ class _AddCardScreenState extends State<AddCardScreen> {
       return;
     }
 
+    final File? savedFront =
+        front != null ? await _saveImagePermanently(front!) : null;
+    final File? savedBack =
+        back != null ? await _saveImagePermanently(back!) : null;
+
     Hive.box<DiscountCard>('cards').add(
       DiscountCard(
         title: titleController.text,
         primaryBarcode: barcode,
         description: '',
-        frontImagePath: front?.path ?? '',
-        backImagePath: back?.path ?? '',
+        frontImagePath: savedFront?.path ?? '',
+        backImagePath: savedBack?.path ?? '',
       ),
     );
 
