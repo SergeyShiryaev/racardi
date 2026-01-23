@@ -19,12 +19,16 @@ class DiscountCard extends HiveObject {
   @HiveField(4)
   String backImagePath;
 
+  @HiveField(5)
+  String barcodeType; // 🔹 новое поле: "Code39", "Code128" и т.д.
+
   DiscountCard({
     required this.primaryBarcode,
     required this.title,
     required this.description,
     required this.frontImagePath,
     required this.backImagePath,
+    required this.barcodeType,
   });
 
   // ===============================
@@ -38,6 +42,7 @@ class DiscountCard extends HiveObject {
       'description': description,
       'frontImagePath': frontImagePath.split('/').last,
       'backImagePath': backImagePath.split('/').last,
+      'barcodeType': barcodeType,
     };
   }
 
@@ -48,6 +53,7 @@ class DiscountCard extends HiveObject {
       description: json['description'] ?? '',
       frontImagePath: json['frontImagePath'] ?? '',
       backImagePath: json['backImagePath'] ?? '',
+      barcodeType: json['barcodeType'] ?? 'Code128', // дефолтный тип
     );
   }
 }

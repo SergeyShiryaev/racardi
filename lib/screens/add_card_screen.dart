@@ -31,7 +31,6 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
   // ───────────────── IMAGE RESIZE ─────────────────
   Future<void> _autoDetectBarcode() async {
-
     final images = <File>[
       if (front != null) front!,
       if (back != null) back!,
@@ -43,7 +42,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
     if (detected != null && detected.isNotEmpty) {
       setState(() {
-        barcodeController.text = detected;
+         barcodeController.text = detected['value'] ?? '';
       });
     }
   }
@@ -240,19 +239,30 @@ class _AddCardScreenState extends State<AddCardScreen> {
   // ───────────────── SAVE CARD ─────────────────
 
   Future<void> saveCard() async {
-    String? barcode = barcodeController.text.trim().isNotEmpty
+    // 🔹 Детект из текстового поля
+    String? barcodeValue = barcodeController.text.trim().isNotEmpty
         ? barcodeController.text.trim()
         : null;
 
-    barcode ??= await BarcodeService.detectFromImages(
-      [if (front != null) front!, if (back != null) back!],
-    );
+    String? barcodeType; // формат штрихкода
 
-    if (barcode == null || barcode.isEmpty) {
-      barcode = await chooseBarcodeSource();
+    // 🔹 Если нет текста, пробуем детект с изображений
+    if (barcodeValue == null || barcodeValue.isEmpty) {
+      final detected = await BarcodeService.detectFromImages(
+        [if (front != null) front!, if (back != null) back!],
+      );
+
+      barcodeValue = detected?['value'];
+      barcodeType = detected?['format']; // строка формата, например 'code128'
     }
 
-    if (barcode == null || barcode.isEmpty) {
+    // 🔹 Если все ещё нет, позволяем пользователю выбрать
+    if (barcodeValue == null || barcodeValue.isEmpty) {
+      barcodeValue = await chooseBarcodeSource();
+      barcodeType ??= 'code128'; // fallback
+    }
+
+    if (barcodeValue == null || barcodeValue.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Штрихкод не указан')),
       );
@@ -267,10 +277,11 @@ class _AddCardScreenState extends State<AddCardScreen> {
     Hive.box<DiscountCard>('cards').add(
       DiscountCard(
         title: titleController.text,
-        primaryBarcode: barcode,
+        primaryBarcode: barcodeValue,
         description: '',
         frontImagePath: savedFront?.path ?? '',
         backImagePath: savedBack?.path ?? '',
+        barcodeType: barcodeType ?? 'code128', // сохраняем формат
       ),
     );
 

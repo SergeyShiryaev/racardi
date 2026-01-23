@@ -134,42 +134,55 @@ class _EditCardScreenState extends State<EditCardScreen> {
     }
   }
 
-  Future<void> saveCard() async {
-    String? barcode = barcodeController.text.trim().isNotEmpty
-        ? barcodeController.text.trim()
-        : null;
+Future<void> saveCard() async {
+  String? barcode = barcodeController.text.trim().isNotEmpty
+      ? barcodeController.text.trim()
+      : null;
 
-    barcode ??= await BarcodeService.detectFromImages([front, back]);
+  String? barcodeType = widget.card.barcodeType; // сохраняем текущий тип
 
-    if (barcode == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Не удалось распознать штрихкод. Введите вручную.')),
-      );
-      return;
+  // 🔹 Если поле штрихкода пустое, пробуем автодетект с изображений
+  if (barcode == null || barcode.isEmpty) {
+    final detected = await BarcodeService.detectFromImages([front, back]);
+
+    if (detected != null && detected.isNotEmpty) {
+      barcode = detected['value'];
+      barcodeType = detected['format']; // только при автодетекте
     }
-
-    File finalFront = front;
-    File finalBack = back;
-
-// If image was replaced (path outside documents), save permanently
-    if (!front.path.contains('/cards/')) {
-      finalFront = await _saveImagePermanently(front);
-    }
-
-    if (!back.path.contains('/cards/')) {
-      finalBack = await _saveImagePermanently(back);
-    }
-
-    widget.card
-      ..title = titleController.text
-      ..primaryBarcode = barcode
-      ..frontImagePath = finalFront.path
-      ..backImagePath = finalBack.path
-      ..save();
-
-    Navigator.pop(context);
   }
+
+  // 🔹 Если всё ещё нет штрихкода, показываем ошибку
+  if (barcode == null || barcode.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Не удалось распознать штрихкод. Введите вручную.')),
+    );
+    return;
+  }
+
+  File finalFront = front;
+  File finalBack = back;
+
+  // 🔹 Если изображения находятся вне папки /cards/, сохраняем их
+  if (!front.path.contains('/cards/')) {
+    finalFront = await _saveImagePermanently(front);
+  }
+
+  if (!back.path.contains('/cards/')) {
+    finalBack = await _saveImagePermanently(back);
+  }
+
+  // 🔹 Сохраняем карту, barcodeType меняется только если был автодетект
+  widget.card
+    ..title = titleController.text
+    ..primaryBarcode = barcode
+    ..barcodeType = barcodeType!
+    ..frontImagePath = finalFront.path
+    ..backImagePath = finalBack.path
+    ..save();
+
+  Navigator.pop(context);
+}
 
   @override
   Widget build(BuildContext context) {
