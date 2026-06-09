@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.racardi"
+    namespace = "com.rainattula.racardi"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.racardi"
+        applicationId = "com.rainattula.racardi"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -41,4 +41,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-options")
 }

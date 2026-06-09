@@ -1,0 +1,38 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Задние лапы -->
+  <line x1="60" y1="140" x2="45" y2="185" stroke="#D4A574" stroke-width="7" stroke-linecap="round"/>
+  <line x1="140" y1="140" x2="155" y2="185" stroke="#D4A574" stroke-width="7" stroke-linecap="round"/>
+  
+  <!-- Тело -->
+  <ellipse cx="100" cy="120" rx="55" ry="60" fill="#FFC107" stroke="#8B6914" stroke-width="2.5"/>
+  
+  <!-- Грудь -->
+  <ellipse cx="100" cy="135" rx="30" ry="35" fill="#FFF9C4" stroke="none"/>
+  
+  <!-- Голова -->
+  <circle cx="100" cy="65" r="32" fill="#FFD54F" stroke="#8B6914" stroke-width="2.5"/>
+  
+  <!-- Морда -->
+  <ellipse cx="100" cy="82" rx="20" ry="18" fill="#FFE082" stroke="none"/>
+  
+  <!-- Нос -->
+  <circle cx="100" cy="78" r="8" fill="#3E2723"/>
+  
+  <!-- Левый глаз -->
+  <circle cx="85" cy="58" r="9" fill="#FFF9C4" stroke="#8B6914" stroke-width="2"/>
+  <circle cx="85" cy="58" r="4.5" fill="#3E2723"/>
+  <circle cx="86" cy="56" r="1.5" fill="white"/>
+  
+  <!-- Правый глаз -->
+  <circle cx="115" cy="58" r="9" fill="#FFF9C4" stroke="#8B6914" stroke-width="2"/>
+  <circle cx="115" cy="58" r="4.5" fill="#3E2723"/>
+  
+  <!-- Левое ухо -->
+  <path d="M 75 45 Q 60 40 55 75 L 65 75 Q 68 48 78 48 Z" fill="#CD9B1D" stroke="#8B6914" stroke-width="2"/>
+  
+  <!-- Правое ухо -->
+  <path d="M 125 45 Q 140 40 145 75 L 135 75 Q 132 48 122 48 Z" fill="#CD9B1D" stroke="#8B6914" stroke-width="2"/>
+  
+  <!-- Хвост -->
+  <path d="M 145 105 Q 165 80 160 50" stroke="#D4A574" stroke-width="8" fill="none" stroke-linecap="round"/>
+</svg>

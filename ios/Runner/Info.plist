@@ -47,5 +47,13 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
-	</dict>
-</plist>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Это приложение использует вашу геолокацию для автоматического открытия дисконтных карт и отслеживания мест их использования.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Это приложение использует вашу геолокацию для автоматического открытия дисконтных карт и отслеживания мест их использования.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Приложение использует камеру для сканирования штрихкодов на дисконтных картах.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Приложение использует вашу фотогалерею для добавления изображений дисконтных карт.</string>
+	<key>NSPhotoLibraryAddOnlyUsageDescription</key>
+	<string>Приложение может сохранять изображения дисконтных карт в вашу фотогалерею.</string>

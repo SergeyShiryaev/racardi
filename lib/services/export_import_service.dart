@@ -15,8 +15,6 @@ class ExportImportService {
   static const _imagesDir = 'images';
   static const _cardsDir = 'cards';
 
-  // ───────────────────── EXPORT ─────────────────────
-
   static Future<void> exportToZip() async {
     final box = Hive.box<DiscountCard>('cards');
 
@@ -72,8 +70,6 @@ class ExportImportService {
     }
   }
 
-  // ───────────────────── PICK ZIP ─────────────────────
-
   static Future<File?> pickZip() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -84,8 +80,6 @@ class ExportImportService {
         ? File(result!.files.single.path!)
         : null;
   }
-
-  // ───────────────────── IMPORT ─────────────────────
 
   static Future<void> importFromZip(File zipFile) async {
     final bytes = zipFile.readAsBytesSync();
@@ -115,7 +109,6 @@ class ExportImportService {
       importedImages[originalName] = outFile.path;
     }
 
-    // 2️⃣ index existing cards by barcode
     final Map<String, int> barcodeIndex = {};
     for (int i = 0; i < box.length; i++) {
       final card = box.getAt(i);
@@ -124,7 +117,6 @@ class ExportImportService {
       }
     }
 
-    // 3️⃣ import / merge cards
     for (final file in archive) {
       if (!file.isFile || file.name != _jsonFile) continue;
 
@@ -144,13 +136,14 @@ class ExportImportService {
         if (barcode.isNotEmpty && barcodeIndex.containsKey(barcode)) {
           await box.putAt(barcodeIndex[barcode]!, importedCard);
         } else {
+          // Добавляем новую карту
           await box.add(importedCard);
         }
       }
     }
   }
 
-  // ───────────────────── SHARE FULL ZIP ─────────────────────
+  // ───────────────────── EXPORT FULL ZIP ─────────────────────
 
   static Future<void> exportAndShareZip() async {
     final box = Hive.box<DiscountCard>('cards');
@@ -172,8 +165,8 @@ class ExportImportService {
 
       for (final path in [card.frontImagePath, card.backImagePath]) {
         if (path.isNotEmpty && File(path).existsSync()) {
-          final name = path.split(Platform.pathSeparator).last;
-          File(path).copySync('${imagesDir.path}/$name');
+          final fileName = path.split(Platform.pathSeparator).last;
+          File(path).copySync('${imagesDir.path}/$fileName');
         }
       }
     }
@@ -201,7 +194,7 @@ class ExportImportService {
     );
   }
 
-  // ───────────────────── SHARE SINGLE CARD ─────────────────────
+  // ───────────────────── EXPORT SINGLE CARD ─────────────────────
 
   static Future<void> exportAndShareCard(DiscountCard card) async {
     final tempDir = await getTemporaryDirectory();
@@ -220,8 +213,8 @@ class ExportImportService {
 
     for (final path in [card.frontImagePath, card.backImagePath]) {
       if (path.isNotEmpty && File(path).existsSync()) {
-        final name = path.split(Platform.pathSeparator).last;
-        File(path).copySync('${imagesDir.path}/$name');
+        final fileName = path.split(Platform.pathSeparator).last;
+        File(path).copySync('${imagesDir.path}/$fileName');
       }
     }
 
@@ -235,9 +228,8 @@ class ExportImportService {
       }
     }
 
-    final zipFile = File(
-      '${tempDir.path}/racardi_card_${card.primaryBarcode}.zip',
-    )..writeAsBytesSync(ZipEncoder().encodeBytes(archive));
+    final zipFile = File('${tempDir.path}/racardi_card_${card.primaryBarcode}.zip')
+      ..writeAsBytesSync(ZipEncoder().encodeBytes(archive));
 
     await Share.shareXFiles(
       [XFile(zipFile.path)],
@@ -252,8 +244,8 @@ class ExportImportService {
     dynamic originalPath,
     Map<String, String> importedImages,
   ) {
-    if (originalPath is! String || originalPath.isEmpty) return '';
-    final fileName = originalPath.split('/').last;
+    if (originalPath == null || originalPath.toString().isEmpty) return '';
+    final fileName = originalPath.toString().split('/').last;
     return importedImages[fileName] ?? '';
   }
 }

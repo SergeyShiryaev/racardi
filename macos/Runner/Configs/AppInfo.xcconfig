@@ -8,7 +8,7 @@
 PRODUCT_NAME = racardi
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.racardi
+PRODUCT_BUNDLE_IDENTIFIER = com.rainattula.racardi
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 com.rainattula. All rights reserved.

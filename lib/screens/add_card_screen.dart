@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/discount_card.dart';
+import '../painters/dog_back_painter.dart';
 import '../services/barcode_service.dart';
 import '../widgets/editable_image_widget.dart';
 import 'barcode_scanner_screen.dart';
@@ -26,23 +29,23 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
   File? front;
   File? back;
+  String barcodeSide = 'front'; // 🔹 сторона со штрихкодом
 
   static const double cardRatio = 1.586;
 
   // ───────────────── IMAGE RESIZE ─────────────────
   Future<void> _autoDetectBarcode() async {
-    final images = <File>[
-      if (front != null) front!,
-      if (back != null) back!,
-    ];
+    if (front == null || back == null) return;
 
-    if (images.isEmpty) return;
+    final detected = await BarcodeService.detectBarcodeWithSide(
+      frontImage: front!,
+      backImage: back!,
+    );
 
-    final detected = await BarcodeService.detectFromImages(images);
-
-    if (detected != null && detected.isNotEmpty) {
+    if (detected != null) {
       setState(() {
-         barcodeController.text = detected['value'] ?? '';
+        barcodeController.text = detected['value'] ?? '';
+        barcodeSide = detected['side'] ?? 'front'; // сохраняем сторону
       });
     }
   }
@@ -110,6 +113,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
   }
 
   void chooseImageSource(bool isFront) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
@@ -118,25 +122,23 @@ class _AddCardScreenState extends State<AddCardScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Камера'),
+              title: Text(l10n.camera),
               onTap: () async {
                 Navigator.pop(context);
                 final img = await pickAndEditImage(ImageSource.camera);
                 if (img != null) {
                   setState(() => isFront ? front = img : back = img);
-                  await _autoDetectBarcode();
                 }
               },
             ),
             ListTile(
               leading: const Icon(Icons.photo),
-              title: const Text('Галерея'),
+              title: Text(l10n.gallery),
               onTap: () async {
                 Navigator.pop(context);
                 final img = await pickAndEditImage(ImageSource.gallery);
                 if (img != null) {
                   setState(() => isFront ? front = img : back = img);
-                  await _autoDetectBarcode();
                 }
               },
             ),
@@ -146,9 +148,19 @@ class _AddCardScreenState extends State<AddCardScreen> {
     );
   }
 
-  Widget imagePreview(File? image, VoidCallback onTap) {
+  Widget imagePreview(File? image, bool isFront) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () async {
+        // 🔹 Короткий тап - сразу открываем камеру и идем в кроп
+        final img = await pickAndEditImage(ImageSource.camera);
+        if (img != null) {
+          setState(() => isFront ? front = img : back = img);
+        }
+      },
+      onLongPress: () {
+        // 🔹 Длительное нажатие - показываем меню выбора
+        chooseImageSource(isFront);
+      },
       child: AspectRatio(
         aspectRatio: cardRatio,
         child: ClipRRect(
@@ -156,8 +168,51 @@ class _AddCardScreenState extends State<AddCardScreen> {
           child: image != null
               ? Image.file(image, fit: BoxFit.cover)
               : Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.image, size: 50),
+                  color: Colors.grey[200],
+                  child: isFront
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 100,
+                              height: 100,
+                              child: SvgPicture.asset(
+                                  'assets/images/dog_sitting.svg'),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'загрузи лицевую сторону',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 120,
+                              height: 120,
+                              child: CustomPaint(
+                                painter: DogBackPainter(),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'загрузи обратную сторону',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
         ),
       ),
@@ -167,6 +222,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
   // ───────────────── BARCODE SOURCE PICK ─────────────────
 
   Future<String?> chooseBarcodeSource() async {
+    final l10n = AppLocalizations.of(context)!;
     return await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -176,7 +232,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Сканировать камерой'),
+              title: Text(l10n.scanBarcode),
               onTap: () async {
                 final code = await Navigator.push<String>(
                   sheetContext,
@@ -189,7 +245,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo),
-              title: const Text('Распознать с фото'),
+              title: Text(l10n.gallery),
               onTap: () async {
                 final XFile? img =
                     await picker.pickImage(source: ImageSource.gallery);
@@ -204,24 +260,26 @@ class _AddCardScreenState extends State<AddCardScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Ввести вручную'),
+              title: Text(l10n.editCard),
               onTap: () async {
                 final result = await showDialog<String>(
                   context: context,
                   builder: (_) {
                     final controller = TextEditingController();
                     return AlertDialog(
-                      title: const Text('Введите штрихкод'),
-                      content: TextField(controller: controller),
+                      title: Text(l10n.selectBarcode),
+                      content: const TextField(
+                        decoration: InputDecoration(hintText: 'Штрихкод'),
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, null),
-                          child: const Text('Отмена'),
+                          child: Text(l10n.cancel),
                         ),
                         TextButton(
                           onPressed: () =>
                               Navigator.pop(context, controller.text),
-                          child: const Text('Сохранить'),
+                          child: Text(l10n.save),
                         ),
                       ],
                     );
@@ -239,61 +297,102 @@ class _AddCardScreenState extends State<AddCardScreen> {
   // ───────────────── SAVE CARD ─────────────────
 
   Future<void> saveCard() async {
-    // 🔹 Детект из текстового поля
-    String? barcodeValue = barcodeController.text.trim().isNotEmpty
-        ? barcodeController.text.trim()
-        : null;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      // 🔹 Детект из текстового поля
+      String? barcodeValue = barcodeController.text.trim().isNotEmpty
+          ? barcodeController.text.trim()
+          : null;
 
-    String? barcodeType; // формат штрихкода
+      String? barcodeType; // формат штрихкода
 
-    // 🔹 Если нет текста, пробуем детект с изображений
-    if (barcodeValue == null || barcodeValue.isEmpty) {
-      final detected = await BarcodeService.detectFromImages(
-        [if (front != null) front!, if (back != null) back!],
-      );
+      // 🔹 Если нет текста и обе стороны выбраны, пробуем детект
+      if ((barcodeValue == null || barcodeValue.isEmpty) &&
+          front != null &&
+          back != null) {
+        final detected = await BarcodeService.detectBarcodeWithSide(
+          frontImage: front!,
+          backImage: back!,
+        );
 
-      barcodeValue = detected?['value'];
-      barcodeType = detected?['format']; // строка формата, например 'code128'
-    }
+        barcodeValue = detected?['value'];
+        barcodeType = detected?['format'];
+        barcodeSide = detected?['side'] ?? 'front';
+      }
 
-    // 🔹 Если все ещё нет, позволяем пользователю выбрать
-    if (barcodeValue == null || barcodeValue.isEmpty) {
-      barcodeValue = await chooseBarcodeSource();
-      barcodeType ??= 'code128'; // fallback
-    }
+      // 🔹 Если все ещё нет, позволяем пользователю выбрать
+      if (barcodeValue == null || barcodeValue.isEmpty) {
+        barcodeValue = await chooseBarcodeSource();
+        barcodeType ??= 'code128'; // fallback
+      }
 
-    if (barcodeValue == null || barcodeValue.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Штрихкод не указан')),
-      );
-      return;
-    }
+      if (barcodeValue == null || barcodeValue.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.selectBarcode)),
+        );
+        return;
+      }
 
-    final File? savedFront =
-        front != null ? await _saveImagePermanently(front!) : null;
-    final File? savedBack =
-        back != null ? await _saveImagePermanently(back!) : null;
+      // 🔹 Сохраняем изображения
+      String frontPath = '';
+      String backPath = '';
 
-    Hive.box<DiscountCard>('cards').add(
-      DiscountCard(
-        title: titleController.text,
+      if (front != null) {
+        final savedFront = await _saveImagePermanently(front!);
+        frontPath = savedFront.path;
+        debugPrint('✅ Front image saved: $frontPath');
+      }
+
+      if (back != null) {
+        final savedBack = await _saveImagePermanently(back!);
+        backPath = savedBack.path;
+        debugPrint('✅ Back image saved: $backPath');
+      }
+
+      // 🔹 Создаём и сохраняем карту в Hive
+      final newCard = DiscountCard(
+        title: titleController.text.isNotEmpty
+            ? titleController.text
+            : 'Новая карта',
         primaryBarcode: barcodeValue,
         description: '',
-        frontImagePath: savedFront?.path ?? '',
-        backImagePath: savedBack?.path ?? '',
-        barcodeType: barcodeType ?? 'code128', // сохраняем формат
-      ),
-    );
+        frontImagePath: frontPath,
+        backImagePath: backPath,
+        barcodeType: barcodeType ?? 'code128',
+        barcodeSide: barcodeSide,
+      );
 
-    Navigator.pop(context);
+      final box = Hive.box<DiscountCard>('cards');
+      await box.add(newCard);
+
+      debugPrint('✅ Card saved to Hive with key: ${newCard.key}');
+      debugPrint('✅ Total cards in box: ${box.length}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.cardUpdated)),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error saving card: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.cardSaveFailed}: $e')),
+        );
+      }
+    }
   }
 
   // ───────────────── UI ─────────────────
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Добавить карту')),
+      appBar: AppBar(title: Text(l10n.addCard)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -307,11 +406,11 @@ class _AddCardScreenState extends State<AddCardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text('Лицевая сторона'),
-          imagePreview(front, () => chooseImageSource(true)),
+          Text(l10n.frontSide),
+          imagePreview(front, true),
           const SizedBox(height: 12),
-          const Text('Обратная сторона'),
-          imagePreview(back, () => chooseImageSource(false)),
+          Text(l10n.backSide),
+          imagePreview(back, false),
           const SizedBox(height: 12),
           TextField(
             controller: barcodeController,
@@ -328,10 +427,54 @@ class _AddCardScreenState extends State<AddCardScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          // 🔹 Auto-detect barcode button
+          if (front != null && back != null)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.auto_fix_high),
+                label: Text(l10n.autoDetectBarcode),
+                onPressed: () async {
+                  await _autoDetectBarcode();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.barcodeDetected),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          const SizedBox(height: 16),
+          Text(l10n.barcodeLocation),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              FilterChip(
+                label: Text(l10n.front),
+                selected: barcodeSide == 'front',
+                onSelected: (_) => setState(() => barcodeSide = 'front'),
+              ),
+              FilterChip(
+                label: Text(l10n.back),
+                selected: barcodeSide == 'back',
+                onSelected: (_) => setState(() => barcodeSide = 'back'),
+              ),
+              FilterChip(
+                label: Text(l10n.both),
+                selected: barcodeSide == 'both',
+                onSelected: (_) => setState(() => barcodeSide = 'both'),
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: saveCard,
-            child: const Text('Сохранить'),
+            child: Text(l10n.save),
           ),
         ],
       ),

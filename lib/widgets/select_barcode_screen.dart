@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_localizations.dart';
 
 class SelectBarcodeScreen extends StatelessWidget {
   final List<String> codes;
@@ -7,8 +8,10 @@ class SelectBarcodeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
-      appBar: AppBar(title: const Text('Выберите штрихкод')),
+      appBar: AppBar(title: Text(l10n.selectBarcode)),
       body: ListView.builder(
         itemCount: codes.length,
         itemBuilder: (context, index) {

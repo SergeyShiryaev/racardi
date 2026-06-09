@@ -1,7 +1,7 @@
 name: racardi
 description: Racardi. Rains Discoiunt cards simple wallet
 publish_to: none
-version: 1.1.0
+version: 1.1.1+2
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -15,6 +15,10 @@ flutter_launcher_icons:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_svg: ^2.0.0
+  shared_preferences: ^2.2.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.1.2
@@ -32,10 +36,15 @@ dependencies:
   url_launcher: ^6.3.2
   web: ^1.1.1
   file_picker: ^10.3.8
-  flutter_launcher_icons: ^0.13.1  
+  flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.1
   flutter_file_dialog: ^3.0.2
   share_plus: ^10.0.2
+  geolocator: ^12.0.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+  permission_handler: ^12.0.3
+  provider: ^6.1.5+1
 
 dev_dependencies:
   flutter_test:
@@ -60,3 +69,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+  generate: true

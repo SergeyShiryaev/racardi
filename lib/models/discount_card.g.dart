@@ -23,13 +23,17 @@ class DiscountCardAdapter extends TypeAdapter<DiscountCard> {
       frontImagePath: fields[3] as String,
       backImagePath: fields[4] as String,
       barcodeType: fields[5] as String,
+      barcodeSide: fields[6] as String,
+      lastOpenTimestamp: fields[7] as int,
+      locationHistory: fields[8] as String,
+      openCount: fields[9] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DiscountCard obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.primaryBarcode)
       ..writeByte(1)
@@ -41,7 +45,15 @@ class DiscountCardAdapter extends TypeAdapter<DiscountCard> {
       ..writeByte(4)
       ..write(obj.backImagePath)
       ..writeByte(5)
-      ..write(obj.barcodeType);
+      ..write(obj.barcodeType)
+      ..writeByte(6)
+      ..write(obj.barcodeSide)
+      ..writeByte(7)
+      ..write(obj.lastOpenTimestamp)
+      ..writeByte(8)
+      ..write(obj.locationHistory)
+      ..writeByte(9)
+      ..write(obj.openCount);
   }
 
   @override

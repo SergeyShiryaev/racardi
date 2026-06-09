@@ -1,4 +1,4 @@
-package com.example.racardi
+package com.rainattula.racardi
 
 import io.flutter.embedding.android.FlutterActivity
 

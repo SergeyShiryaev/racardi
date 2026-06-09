@@ -1,46 +1,192 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:racardi/main.dart';
-
+import '../app_localizations.dart';
+import '../painters/lying_dog_painter.dart';
 import '../services/export_import_service.dart';
+import '../services/language_service.dart';
+
+
+void _showAboutDialog() {
+  final ctx = rootNavigatorKey.currentContext;
+  if (ctx == null) return;
+  
+  final l10n = AppLocalizations.of(ctx)!;
+  
+  showDialog(
+    context: ctx,
+    builder: (_) => AlertDialog(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l10n.racardiWallet,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.version,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: SizedBox(
+              width: 80,
+              height: 80,
+              child: CustomPaint(painter: LyingDogPainter()),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Flexible(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  showDialog(
+                    context: ctx,
+                    builder: (_) => AlertDialog(
+                      title: Text(l10n.info),
+                      content: Text(l10n.aboutInfo),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text(l10n.close),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Text(l10n.info, style: const TextStyle(fontSize: 9)),
+              ),
+            ),
+            Flexible(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  showLicensePage(
+                    context: ctx,
+                    applicationName: l10n.racardiWallet,
+                    applicationVersion: '1.1.1',
+                  );
+                },
+                child: Text(l10n.licenses, style: const TextStyle(fontSize: 9)),
+              ),
+            ),
+            Flexible(
+              child: TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.close, style: const TextStyle(fontSize: 9)),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+void _showLanguageDialog() {
+  final ctx = rootNavigatorKey.currentContext;
+  if (ctx == null) return;
+  
+  final languageService = ctx.read<LanguageService>();
+  final currentLocale = languageService.locale;
+  final l10n = AppLocalizations.of(ctx)!;
+  
+  final supportedLocales = [
+    {'code': 'ru', 'name': 'Русский'},
+    {'code': 'en', 'name': 'English'},
+  ];
+  
+  showDialog(
+    context: ctx,
+    builder: (_) => AlertDialog(
+      title: Text(l10n.language),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ...supportedLocales.map((langInfo) => RadioListTile<String>(
+            title: Text(langInfo['name']!),
+            value: langInfo['code']!,
+            groupValue: currentLocale,
+            onChanged: (value) {
+              if (value != null) {
+                languageService.setLocale(value);
+                Navigator.pop(ctx);
+              }
+            },
+          )),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: Text(l10n.close),
+        ),
+      ],
+    ),
+  );
+}
 
 class SettingsDrawer extends StatelessWidget {
-  const SettingsDrawer({super.key});
+  final VoidCallback? onShowColumnsDialog;
+
+  const SettingsDrawer({super.key, this.onShowColumnsDialog});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Drawer(
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
+      child: Stack(
+        children: [
+          /// 🐕 ФОН - СОБАКА С МОЛОТКОМ И КНИГОЙ
+          Center(
+            child: Opacity(
+              opacity: 0.25,
+              child: CustomPaint(
+                painter: LyingDogPainter(),
+                size: const Size(64, 64),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
               child: Text(
-                'Настройки',
-                style: TextStyle(
+                l10n.settings,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
 
-            // --- ТЕМА ---
-            /*
+            // --- ЯЗЫК ---
             ListTile(
-              leading: const Icon(Icons.palette),
-              title: const Text('Тема приложения'),
+              leading: const Icon(Icons.language),
+              title: Text(l10n.language),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: переключение темы
+                WidgetsBinding.instance.addPostFrameCallback((_) => _showLanguageDialog());
               },
             ),
-            */
+
             // --- ОТПРАВКА ПО EMAIL ---
             ListTile(
               leading: const Icon(Icons.email_sharp),
-              title: const Text('Поделиться'),
+              title: Text(l10n.share),
               onTap: () async {
                 Navigator.pop(context);
 
@@ -48,11 +194,11 @@ class SettingsDrawer extends StatelessWidget {
                   await ExportImportService.exportAndShareZip();
 
                   rootMessengerKey.currentState?.showSnackBar(
-                    const SnackBar(content: Text('Экспорт отправлен по почте')),
+                    SnackBar(content: Text(l10n.exportSent)),
                   );
                 } catch (e) {
                   rootMessengerKey.currentState?.showSnackBar(
-                    SnackBar(content: Text('Ошибка отправки: $e')),
+                    SnackBar(content: Text('${l10n.exportErrorSend}: $e')),
                   );
                 }
               },
@@ -61,7 +207,7 @@ class SettingsDrawer extends StatelessWidget {
             // --- ИМПОРТ / ЭКСПОРТ ---
             ListTile(
               leading: const Icon(Icons.import_export),
-              title: const Text('Импорт / Экспорт 2'),
+              title: Text(l10n.importExport),
               onTap: () async {
                 // закрываем drawer
                 Navigator.pop(context);
@@ -70,27 +216,24 @@ class SettingsDrawer extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
-                    title: const Text('Импорт / Экспорт 3'),
-                    content: const Text(
-                      'Выберите действие для сохранения или загрузки данных',
+                    title: Text(l10n.importExport),
+                    content: Text(
+                      l10n.exportChooseAction,
                     ),
                     actions: [
                       // --- ЭКСПОРТ ---
                       TextButton(
-                        child: const Text('Экспорт'),
+                        child: Text(l10n.export),
                         onPressed: () async {
-                          // ✅ закрываем Drawer ПРАВИЛЬНО
-                          //Navigator.of(context, rootNavigator: true).pop();
-
                           try {
                             await ExportImportService.exportToZip();
 
                             rootMessengerKey.currentState?.showSnackBar(
-                              const SnackBar(content: Text('Экспорт завершён')),
+                              SnackBar(content: Text(l10n.exportCompleted)),
                             );
                           } catch (e) {
                             rootMessengerKey.currentState?.showSnackBar(
-                              SnackBar(content: Text('Ошибка экспорта: $e')),
+                              SnackBar(content: Text('${l10n.exportError}: $e')),
                             );
                           }
                         },
@@ -98,7 +241,7 @@ class SettingsDrawer extends StatelessWidget {
 
                       // --- ИМПОРТ ---
                       TextButton(
-                        child: const Text('Импорт'),
+                        child: Text(l10n.import),
                         onPressed: () async {
                           try {
                             final File? zip =
@@ -108,11 +251,11 @@ class SettingsDrawer extends StatelessWidget {
                             await ExportImportService.importFromZip(zip);
 
                             rootMessengerKey.currentState?.showSnackBar(
-                              const SnackBar(content: Text('Экспорт завершён')),
+                              SnackBar(content: Text(l10n.exportCompleted)),
                             );
                           } catch (e) {
                             rootMessengerKey.currentState?.showSnackBar(
-                              SnackBar(content: Text('Ошибка экспорта: $e')),
+                              SnackBar(content: Text('${l10n.exportError}: $e')),
                             );
                           }
                         },
@@ -126,24 +269,33 @@ class SettingsDrawer extends StatelessWidget {
               },
             ),
 
+            // --- КОЛИЧЕСТВО КОЛОНОК ---
+            if (onShowColumnsDialog != null)
+              ListTile(
+                leading: const Icon(Icons.view_agenda),
+                title: Text(l10n.columnsCount),
+                onTap: () {
+                  Navigator.pop(context);
+                  onShowColumnsDialog?.call();
+                },
+              ),
+
             const Spacer(),
 
-            // --- О ПРИЛОЖЕНИИ ---
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: const Text('О приложении'),
+              title: Text(l10n.about),
               onTap: () {
                 Navigator.pop(context);
-                showAboutDialog(
-                  context: context,
-                  applicationName: 'Racardi Wallet',
-                  applicationVersion: '1.1.0',
-                );
+                WidgetsBinding.instance.addPostFrameCallback((_) => _showAboutDialog());
               },
             ),
           ],
         ),
+        ),
+        ],
       ),
     );
   }
 }
+
