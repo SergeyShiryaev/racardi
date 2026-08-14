@@ -14,7 +14,7 @@ class AppScaffold extends StatelessWidget {
   final VoidCallback? onToggleTheme;
   final VoidCallback? onSendExportByMail;
 
-  AppScaffold({
+  const AppScaffold({
     super.key,
     required this.body,
     required this.title,
@@ -24,27 +24,25 @@ class AppScaffold extends StatelessWidget {
     this.onSendExportByMail,
   });
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     final languageService = context.read<LanguageService>();
     final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(title),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
         bottom: bottom,
       ),
       drawer: Drawer(
         child: Stack(
           children: [
-            /// 🐕 ФОН - СОБАКА С МОЛОТКОМ И КНИГОЙ
             Center(
               child: Opacity(
                 opacity: 0.25,
@@ -205,31 +203,31 @@ class AppScaffold extends StatelessWidget {
         title: Text(l10n.language),
         content: Stack(
           children: [
-            /// 🐕 ФОН - ВЕСЕЛАЯ СОБАКА
             Opacity(
               opacity: 0.6,
               child: CustomPaint(
                 painter: HappyDogPainter(),
               ),
             ),
-            /// 📋 ПЕРЕКЛЮЧАТЕЛИ ЯЗЫКА
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: supportedLocales.map((langInfo) {
-                return RadioListTile<String>(
-                  title: Text(langInfo['name']!),
-                  value: langInfo['code']!,
-                  groupValue: currentLocale,
-                  tileColor: Colors.white.withOpacity(0.8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  onChanged: (value) {
-                    if (value != null) {
-                      languageService.setLocale(value);
-                      Navigator.pop(context);
-                    }
-                  },
-                );
-              }).toList(),
+            RadioGroup<String>(
+              groupValue: currentLocale,
+              onChanged: (value) {
+                if (value != null) {
+                  languageService.setLocale(value);
+                  Navigator.pop(context);
+                }
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: supportedLocales.map((langInfo) {
+                  return RadioListTile<String>(
+                    title: Text(langInfo['name']!),
+                    value: langInfo['code']!,
+                    tileColor: Colors.white.withValues(alpha: 0.8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ),
