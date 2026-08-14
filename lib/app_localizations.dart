@@ -487,6 +487,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send error'**
   String get errorSending;
+
+  /// No description provided for @events.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get events;
+
+  /// No description provided for @noEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'No events'**
+  String get noEvents;
+
+  /// No description provided for @addEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Add event'**
+  String get addEvent;
+
+  /// No description provided for @editEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit event'**
+  String get editEvent;
+
+  /// No description provided for @eventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get eventTitle;
+
+  /// No description provided for @eventDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get eventDate;
+
+  /// No description provided for @eventTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get eventTime;
+
+  /// No description provided for @eventDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get eventDescription;
+
+  /// No description provided for @eventType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get eventType;
+
+  /// No description provided for @deleteEventConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete event?'**
+  String get deleteEventConfirm;
+
+  /// No description provided for @addDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Add document'**
+  String get addDocument;
+
+  /// No description provided for @showQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Show QR'**
+  String get showQr;
+
+  /// No description provided for @noDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents'**
+  String get noDocuments;
+
+  /// No description provided for @eventTypeCinema.
+  ///
+  /// In en, this message translates to:
+  /// **'Cinema'**
+  String get eventTypeCinema;
+
+  /// No description provided for @eventTypeTheater.
+  ///
+  /// In en, this message translates to:
+  /// **'Theater'**
+  String get eventTypeTheater;
+
+  /// No description provided for @eventTypeConcert.
+  ///
+  /// In en, this message translates to:
+  /// **'Concert'**
+  String get eventTypeConcert;
+
+  /// No description provided for @eventTypeTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get eventTypeTravel;
+
+  /// No description provided for @eventTypeSport.
+  ///
+  /// In en, this message translates to:
+  /// **'Sport'**
+  String get eventTypeSport;
+
+  /// No description provided for @eventTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get eventTypeOther;
 }
 
 class _AppLocalizationsDelegate

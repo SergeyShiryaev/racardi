@@ -205,4 +205,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorSending => 'Send error';
+
+  @override
+  String get events => 'Events';
+
+  @override
+  String get noEvents => 'No events';
+
+  @override
+  String get addEvent => 'Add event';
+
+  @override
+  String get editEvent => 'Edit event';
+
+  @override
+  String get eventTitle => 'Title';
+
+  @override
+  String get eventDate => 'Date';
+
+  @override
+  String get eventTime => 'Time';
+
+  @override
+  String get eventDescription => 'Description';
+
+  @override
+  String get eventType => 'Type';
+
+  @override
+  String get deleteEventConfirm => 'Delete event?';
+
+  @override
+  String get addDocument => 'Add document';
+
+  @override
+  String get showQr => 'Show QR';
+
+  @override
+  String get noDocuments => 'No documents';
+
+  @override
+  String get eventTypeCinema => 'Cinema';
+
+  @override
+  String get eventTypeTheater => 'Theater';
+
+  @override
+  String get eventTypeConcert => 'Concert';
+
+  @override
+  String get eventTypeTravel => 'Travel';
+
+  @override
+  String get eventTypeSport => 'Sport';
+
+  @override
+  String get eventTypeOther => 'Other';
 }

@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 
 import 'models/discount_card.dart';
-import 'screens/card_list_screen.dart';
+import 'models/card_event.dart';
+import 'models/event_document.dart';
+import 'screens/main_tabs_screen.dart';
 import 'services/language_service.dart';
 import 'app_localizations.dart';
 
@@ -21,6 +23,8 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(DiscountCardAdapter());
+  Hive.registerAdapter(CardEventAdapter());
+  Hive.registerAdapter(EventDocumentAdapter());
 
   // Инициализируем LanguageService
   final languageService = LanguageService();
@@ -43,6 +47,8 @@ Future<void> main() async {
     await Hive.openBox<DiscountCard>('cards');
     debugPrint('✅ Новая база создана');
   }
+
+  await Hive.openBox<CardEvent>('events');
 
   runApp(MyApp(languageService: languageService));
 }
@@ -74,7 +80,7 @@ class MyApp extends StatelessWidget {
             locale: Locale(langService.locale),
             navigatorKey: rootNavigatorKey,
             scaffoldMessengerKey: rootMessengerKey,
-            home: const CardListScreen(),
+            home: const MainTabsScreen(),
           );
         },
       ),

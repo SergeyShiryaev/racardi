@@ -207,4 +207,61 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get errorSending => 'Ошибка отправки';
+
+  @override
+  String get events => 'События';
+
+  @override
+  String get noEvents => 'Нет событий';
+
+  @override
+  String get addEvent => 'Добавить событие';
+
+  @override
+  String get editEvent => 'Редактировать событие';
+
+  @override
+  String get eventTitle => 'Название';
+
+  @override
+  String get eventDate => 'Дата';
+
+  @override
+  String get eventTime => 'Время';
+
+  @override
+  String get eventDescription => 'Описание';
+
+  @override
+  String get eventType => 'Тип';
+
+  @override
+  String get deleteEventConfirm => 'Удалить событие?';
+
+  @override
+  String get addDocument => 'Добавить документ';
+
+  @override
+  String get showQr => 'Показать QR';
+
+  @override
+  String get noDocuments => 'Нет документов';
+
+  @override
+  String get eventTypeCinema => 'Кино';
+
+  @override
+  String get eventTypeTheater => 'Театр';
+
+  @override
+  String get eventTypeConcert => 'Концерт';
+
+  @override
+  String get eventTypeTravel => 'Поездка';
+
+  @override
+  String get eventTypeSport => 'Спорт';
+
+  @override
+  String get eventTypeOther => 'Другое';
 }
